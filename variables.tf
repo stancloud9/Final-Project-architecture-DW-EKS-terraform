@@ -68,7 +68,7 @@ variable "cluster_endpoint_public_access_cidrs" {
 variable "cluster_admin_arns" {
   description = "Extra IAM users/roles that get cluster-admin. The identity that runs terraform apply (the GitHub OIDC role) is admin automatically, so do NOT list it here."
   type        = list(string)
-  default     = ["arn:aws:iam::060647991200:user/terraform"]
+  default     = ["arn:aws:iam::910965283770:user/terraform"]
 }
 
 # ---- Worker nodes ----
@@ -161,14 +161,14 @@ variable "letsencrypt_server" {
 variable "letsencrypt_email" {
   description = "Optional contact email for the Let's Encrypt account"
   type        = string
-  default     = "chukwunonsosmartagbawo@gmail.com"
+  default     = "stanleyunue@gmail.com"
 }
 
 # ---- Argo CD ----
 variable "argocd_hostname" {
   description = "Public hostname for the Argo CD UI (must match manifests/argocd-ingress.yaml)"
   type        = string
-  default     = "argocd.digitalwitch.online"
+  default     = "argocd.stanleyunue.online"
 }
 
 # ---- EFS ----
@@ -182,7 +182,7 @@ variable "efs_transition_to_ia" {
 variable "kubeconfig_bucket" {
   description = "S3 bucket where the admin kubeconfig is uploaded"
   type        = string
-  default     = "terrformstate-060647991200"
+  default     = "terrformstate-910965283770"
 }
 
 variable "kubeconfig_s3_key" {
