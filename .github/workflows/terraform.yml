@@ -21,6 +21,12 @@ env:
   TF_INPUT: "false"
 
 jobs:
+  workflow-check:
+    name: Workflow configuration check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm workflow is running
+        run: echo "GitHub Actions workflow is working"
   # ---------------------------------------------------------------------------
 #   init:
 #     name: terraform init & validate
