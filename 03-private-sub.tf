@@ -1,11 +1,12 @@
+
 resource "aws_subnet" "private_subnet_01" {
   vpc_id            = aws_vpc.vpc.id
   cidr_block        = var.private_subnet_cidrs[0]
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name                                        = "private_subnet_01_new"
-    "kubernetes.io/role/internal-elb"           = "1"
+    Name                                         = "private_subnet_01_new"
+    "kubernetes.io/role/internal-elb"            = "1"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
@@ -16,14 +17,13 @@ resource "aws_subnet" "private_subnet_02" {
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {
-    Name                                        = "private_subnet_02_new"
-    "kubernetes.io/role/internal-elb"           = "1"
+    Name                                         = "private_subnet_02_new"
+    "kubernetes.io/role/internal-elb"            = "1"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
 
-# NAT gateway so worker nodes in the private subnets can reach the internet
-# (pull container images, register with the EKS control plane).
+# NAT gateway allows private subnet resources to access the internet.
 resource "aws_eip" "nat" {
   domain = "vpc"
 
