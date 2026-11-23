@@ -5,8 +5,8 @@ resource "aws_subnet" "private_subnet_01" {
   availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name                                         = "private_subnet_01_new"
-    "kubernetes.io/role/internal-elb"            = "1"
+    Name                                        = "private_subnet_01_new"
+    "kubernetes.io/role/internal-elb"           = "1"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
@@ -17,8 +17,8 @@ resource "aws_subnet" "private_subnet_02" {
   availability_zone = data.aws_availability_zones.available.names[1]
 
   tags = {
-    Name                                         = "private_subnet_02_new"
-    "kubernetes.io/role/internal-elb"            = "1"
+    Name                                        = "private_subnet_02_new"
+    "kubernetes.io/role/internal-elb"           = "1"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }

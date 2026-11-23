@@ -10,8 +10,8 @@ resource "aws_subnet" "public_subnet_01" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name                                         = "public_subnet_01_new"
-    "kubernetes.io/role/elb"                     = "1"
+    Name                                        = "public_subnet_01_new"
+    "kubernetes.io/role/elb"                    = "1"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
@@ -28,8 +28,8 @@ resource "aws_subnet" "public_subnet_02" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name                                         = "public_subnet_02_new"
-    "kubernetes.io/role/elb"                     = "1"
+    Name                                        = "public_subnet_02_new"
+    "kubernetes.io/role/elb"                    = "1"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
