@@ -21,37 +21,38 @@ env:
   TF_INPUT: "false"
 
 jobs:
-  workflow-check:
-    name: Workflow configuration check
+  init:
+    name: Terraform init and validate
     runs-on: ubuntu-latest
+
     steps:
-      - name: Confirm workflow is running
-        run: echo "GitHub Actions workflow is working"
-  # ---------------------------------------------------------------------------
-#   init:
-#     name: terraform init & validate
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v7
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
-#       - uses: hashicorp/setup-terraform@v4
-#         with:
-#           terraform_version: ${{ env.TF_VERSION }}
-#           terraform_wrapper: false
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
 
-#       - uses: aws-actions/configure-aws-credentials@v6
-#         with:
-#           role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
-#           aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
 
-#       - name: terraform init
-#         run: terraform init
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
 
-#       - name: terraform fmt
-#         run: terraform fmt -check -recursive
+      - name: Terraform init
+        run: terraform init
 
-#       - name: terraform validate
-#         run: terraform validate
+      - name: Terraform format check
+        run: terraform fmt -check -recursive
+
+      - name: Terraform validate
+        run: terraform validate
+
 
 # # #   # ---------------------------------------------------------------------------
 #   tfsec:
