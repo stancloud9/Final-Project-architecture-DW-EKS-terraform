@@ -52,6 +52,9 @@ jobs:
 
       - name: Terraform validate
         run: terraform validate
+        
+      - name: Terraform plan (no deployment)
+        run: terraform plan -input=false -no-color -lock-timeout=5m
 
 
 # # #   # ---------------------------------------------------------------------------
