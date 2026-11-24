@@ -1,5 +1,4 @@
-
-name: Inspect Kubernetes Ingress
+﻿name: Inspect Kubernetes Ingress
 
 on:
   workflow_dispatch:
@@ -11,7 +10,6 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -19,24 +17,29 @@ jobs:
           role-to-assume: arn:aws:iam::910965283770:role/github-actions-terraform
           aws-region: us-east-2
 
-      - name: Configure kubectl
-        run: |
-          aws eks update-kubeconfig \
-            --region us-east-2 \
-            --name stancloud-eks
-
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
         with:
           version: latest
 
-      - name: Inspect Kubernetes services
+      - name: Inspect Kubernetes
         run: |
-          echo "=== Kubernetes Services ==="
-          kubectl get svc -A -o wide
+          aws eks update-kubeconfig --region us-east-2 --name stancloud-eks
 
-          echo "=== Ingress Resources ==="
+          echo "=== NGINX SERVICE ==="
+          kubectl get svc nginx-ingress-controller -n nginx-ingress -o yaml
+
+          echo "=== NGINX PODS ==="
+          kubectl get pods -n nginx-ingress -o wide
+
+          echo "=== NGINX DEPLOYMENTS ==="
+          kubectl get deployments -n nginx-ingress -o wide
+
+          echo "=== INGRESS CLASSES ==="
+          kubectl get ingressclass -o yaml
+
+          echo "=== ARGOCD PODS ==="
+          kubectl get pods -n argocd -o wide
+
+          echo "=== ALL INGRESS RESOURCES ==="
           kubectl get ingress -A
-
-          echo "=== Service Endpoints ==="
-          kubectl get endpoints -A
