@@ -1,11 +1,11 @@
 
-name: Terraform stale-lock recovery and destroy plan
+name: Terraform destroy approved infrastructure
 
 on:
   workflow_dispatch:
     inputs:
-      confirm_unlock:
-        description: "I confirm all other Terraform jobs are stopped and approve removing the stale lock"
+      confirm_destroy:
+        description: "I approve destroying the 39 Terraform-managed resources"
         required: true
         type: boolean
         default: false
@@ -25,8 +25,8 @@ env:
   TF_INPUT: false
 
 jobs:
-  cleanup-plan:
-    name: Unlock state and create destroy plan
+  destroy:
+    name: Plan and destroy approved infrastructure
     runs-on: ubuntu-latest
 
     steps:
@@ -51,17 +51,32 @@ jobs:
       - name: Initialize Terraform
         run: terraform init -input=false
 
-      - name: Verify unlock approval
-        if: ${{ inputs.confirm_unlock != true }}
-        run: |
-          echo "Unlock approval was not selected."
-          exit 1
-
-      - name: Remove stale Terraform lock
-        run: terraform force-unlock -force 930a53fa-a202-5d99-2116-3ddc19bfe6db
-
-      - name: Generate destroy plan only
+      - name: Generate destroy plan
         run: terraform plan -destroy -input=false -no-color -lock-timeout=5m -out=tf-destroy.tfplan
 
       - name: Display destroy plan
         run: terraform show -no-color tf-destroy.tfplan
+
+      - name: Verify destroy plan scope
+        shell: bash
+        run: |
+          terraform show -json tf-destroy.tfplan > tf-destroy.json
+          destroy_count=$(jq '[.resource_changes[] | select(.change.actions == ["delete"])] | length' tf-destroy.json)
+          s3_count=$(jq '[.resource_changes[] | select(.type == "aws_s3_bucket" or .type == "aws_s3_object")] | length' tf-destroy.json)
+
+          echo "Resources to destroy: $destroy_count"
+          echo "S3 resources in plan: $s3_count"
+
+          if [ "$destroy_count" -ne 39 ]; then
+            echo "Expected exactly 39 deletions; stopping for review."
+            exit 1
+          fi
+
+          if [ "$s3_count" -ne 0 ]; then
+            echo "S3 resources detected; refusing to apply."
+            exit 1
+          fi
+
+      - name: Execute approved destroy plan
+        if: ${{ github.event.inputs.confirm_destroy == 'true' }}
+        run: terraform apply -input=false -no-color tf-destroy.tfplan
