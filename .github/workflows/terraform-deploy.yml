@@ -9,6 +9,11 @@ on:
         required: true
         type: boolean
         default: false
+      tags_only:
+        description: "Apply only the five EC2 worker Name tags"
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   id-token: write
@@ -28,6 +33,9 @@ jobs:
   deploy:
     name: Terraform plan and deployment
     runs-on: ubuntu-latest
+
+    env:
+      TAGS_ONLY: ${{ inputs.tags_only }}
 
     steps:
       - name: Checkout repository
@@ -58,13 +66,23 @@ jobs:
         run: terraform validate
 
       - name: Generate Terraform plan
-        run: terraform plan -input=false -no-color -lock-timeout=5m -out=tfplan
+        run: |
+          if [ "$TAGS_ONLY" = "true" ]; then
+            terraform plan -input=false -no-color -lock-timeout=5m -out=tfplan \
+              -target='aws_ec2_tag.eks_worker_names["i-0e20491afd9b6d9fc"]' \
+              -target='aws_ec2_tag.eks_worker_names["i-0a5172bbbd5666413"]' \
+              -target='aws_ec2_tag.eks_worker_names["i-0c710f5ce40b27b63"]' \
+              -target='aws_ec2_tag.eks_worker_names["i-049b05afb9714ca4c"]' \
+              -target='aws_ec2_tag.eks_worker_names["i-04136588889405e05"]'
+          else
+            terraform plan -input=false -no-color -lock-timeout=5m -out=tfplan
+          fi
 
       - name: Check deployment approval
         run: |
           echo "Approval input: ${{ inputs.confirm_deploy }}"
-          echo "Event input: ${{ github.event.inputs.confirm_deploy }}"
+          echo "Tags-only input: ${{ inputs.tags_only }}"
 
       - name: Apply Terraform plan
-        if: ${{ github.event.inputs.confirm_deploy == 'true' }}
+        if: ${{ inputs.confirm_deploy == true }}
         run: terraform apply -input=false tfplan
