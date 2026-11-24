@@ -60,27 +60,51 @@ jobs:
       - name: Verify destroy plan scope
         shell: bash
         run: |
+          set -euo pipefail
+
           terraform show -json tf-destroy.tfplan > tf-destroy.json
 
           destroy_count=$(jq '[.resource_changes[] | select(.change.actions == ["delete"])] | length' tf-destroy.json)
-          s3_count=$(jq '[.resource_changes[] | select(.type == "aws_s3_bucket" or .type == "aws_s3_object")] | length' tf-destroy.json)
+
+          non_delete_count=$(jq '[.resource_changes[] | select(.change.actions != ["delete"])] | length' tf-destroy.json)
+
+          s3_count=$(jq '[.resource_changes[] | select(.type | startswith("aws_s3_"))] | length' tf-destroy.json)
+
+          s3_addresses=$(jq -r '[.resource_changes[] | select(.type | startswith("aws_s3_")) | .address] | sort | join(",")' tf-destroy.json)
+
+          ecr_count=$(jq '[.resource_changes[] | select(.type | startswith("aws_ecr_"))] | length' tf-destroy.json)
 
           echo "Resources to destroy: $destroy_count"
+          echo "Non-delete actions: $non_delete_count"
           echo "S3 resources in plan: $s3_count"
+          echo "S3 resource addresses: $s3_addresses"
+          echo "ECR resources in plan: $ecr_count"
 
           echo "Resources scheduled for deletion:"
           jq -r '.resource_changes[] | select(.change.actions == ["delete"]) | .address' tf-destroy.json
 
-          if [ "$destroy_count" -ne 7 ]; then
-            echo "Expected exactly 7 deletions; stopping for review."
+          if [ "$destroy_count" -ne 59 ]; then
+            echo "Expected exactly 59 deletions; stopping for review."
             exit 1
           fi
 
-          if [ "$s3_count" -ne 0 ]; then
-            echo "S3 resources detected; refusing to apply."
+          if [ "$non_delete_count" -ne 0 ]; then
+            echo "Unexpected non-delete actions detected; refusing to apply."
             exit 1
           fi
+
+          if [ "$s3_count" -ne 1 ] || [ "$s3_addresses" != "aws_s3_object.kubeconfig" ]; then
+            echo "Unexpected S3 resources detected; refusing to apply."
+            exit 1
+          fi
+
+          if [ "$ecr_count" -ne 0 ]; then
+            echo "ECR resources detected; refusing to apply."
+            exit 1
+          fi
+
+          echo "Destroy plan scope verified successfully."
 
       - name: Execute approved destroy plan
-        if: ${{ github.event.inputs.confirm_destroy == 'true' }}
+        if: ${{ inputs.confirm_destroy == true }}
         run: terraform apply -input=false -no-color tf-destroy.tfplan
