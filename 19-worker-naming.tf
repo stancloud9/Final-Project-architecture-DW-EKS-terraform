@@ -2,6 +2,16 @@
 # Automatically name EKS worker EC2 instances.
 # This does not modify or replace the EKS node group.
 
+# Remove the old static tag resources from Terraform state
+# without deleting the existing EC2 Name tags.
+removed {
+  from = aws_ec2_tag.eks_worker_names
+
+  lifecycle {
+    destroy = false
+  }
+}
+
 locals {
   eks_worker_asg_name       = aws_eks_node_group.node_group.resources[0].autoscaling_groups[0].name
   worker_naming_lambda_name = "${var.cluster_name}-worker-naming"
