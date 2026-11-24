@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm_destroy:
-        description: "I approve destroying the 39 Terraform-managed resources"
+        description: "I approve destroying the remaining Terraform-managed resources"
         required: true
         type: boolean
         default: false
@@ -61,14 +61,18 @@ jobs:
         shell: bash
         run: |
           terraform show -json tf-destroy.tfplan > tf-destroy.json
+
           destroy_count=$(jq '[.resource_changes[] | select(.change.actions == ["delete"])] | length' tf-destroy.json)
           s3_count=$(jq '[.resource_changes[] | select(.type == "aws_s3_bucket" or .type == "aws_s3_object")] | length' tf-destroy.json)
 
           echo "Resources to destroy: $destroy_count"
           echo "S3 resources in plan: $s3_count"
 
-          if [ "$destroy_count" -ne 39 ]; then
-            echo "Expected exactly 39 deletions; stopping for review."
+          echo "Resources scheduled for deletion:"
+          jq -r '.resource_changes[] | select(.change.actions == ["delete"]) | .address' tf-destroy.json
+
+          if [ "$destroy_count" -ne 7 ]; then
+            echo "Expected exactly 7 deletions; stopping for review."
             exit 1
           fi
 
