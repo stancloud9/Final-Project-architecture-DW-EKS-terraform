@@ -1,11 +1,11 @@
 
 locals {
   eks_worker_names = {
-    "i-0e20491afd9b6d9fc" = "eks-worker-01"
-    "i-0a5172bbbd5666413" = "eks-worker-02"
-    "i-0c710f5ce40b27b63" = "eks-worker-03"
-    "i-049b05afb9714ca4c" = "eks-worker-04"
-    "i-04136588889405e05" = "eks-worker-05"
+    "i-047852b5874fc56c6" = "eks-worker-01"
+    "i-0533d3249e8f6df92" = "eks-worker-02"
+    "i-0737af23b2c24ea34" = "eks-worker-03"
+    "i-09cd252971a4c0338" = "eks-worker-04"
+    "i-0d036e5b508f9feac" = "eks-worker-05"
   }
 }
 
