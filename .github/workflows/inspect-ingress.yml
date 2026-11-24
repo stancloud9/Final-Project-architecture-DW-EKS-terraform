@@ -1,0 +1,42 @@
+
+name: Inspect Kubernetes Ingress
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::910965283770:role/github-actions-terraform
+          aws-region: us-east-2
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --region us-east-2 \
+            --name stancloud-eks
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: latest
+
+      - name: Inspect Kubernetes services
+        run: |
+          echo "=== Kubernetes Services ==="
+          kubectl get svc -A -o wide
+
+          echo "=== Ingress Resources ==="
+          kubectl get ingress -A
+
+          echo "=== Service Endpoints ==="
+          kubectl get endpoints -A
