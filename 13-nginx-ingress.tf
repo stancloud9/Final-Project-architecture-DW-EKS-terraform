@@ -22,7 +22,7 @@ resource "helm_release" "nginx_ingress" {
 
       service = {
         type                  = "LoadBalancer"
-        externalTrafficPolicy = "Local"
+        externalTrafficPolicy = "Cluster"
         annotations = {
           "service.beta.kubernetes.io/aws-load-balancer-type" = "nlb"
         }
