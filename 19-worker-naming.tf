@@ -3,7 +3,7 @@
 # This does not modify or replace the EKS node group.
 
 locals {
-  eks_worker_asg_name = aws_eks_node_group.node_group.resources[0].autoscaling_groups[0].name
+  eks_worker_asg_name       = aws_eks_node_group.node_group.resources[0].autoscaling_groups[0].name
   worker_naming_lambda_name = "${var.cluster_name}-worker-naming"
 }
 
